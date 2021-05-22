@@ -1,13 +1,26 @@
 var createError = require('http-errors');
+var cookieSession = require('cookie-session')
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var config = require('./config');
+var mongoose = require('mongoose')
+
+mongoose.connect(config.db, { useNewUrlParser: true});
+
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  // we're connected!
+});
 
 var indexRouter = require('./routes/index');
 var newsRouter = require('./routes/news');
 var quizRouter = require('./routes/quiz');
 var adminRouter = require('./routes/admin');
+
+//mongodb+srv://admin:pjrt6ulocdrHHlOn@cluster0.xkaib.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
 
 
 var app = express();
@@ -21,6 +34,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(cookieSession({
+  name: 'session',
+  keys: config.keySession,
+  maxAge: config.maxAgeSession
+}))
 
 app.use(function(req, res, next) {
 res.locals.path = req.path;
